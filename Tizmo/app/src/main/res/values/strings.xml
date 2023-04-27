@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">Tizmo</string>
+
+    <string name="on_air">On Air</string>
+
+    <!--    Location Channel-->
+    <string name="location_channel_id">LOCATION</string>
+    <string name="location_channel_name">Location Tracking</string>
+    <string name="location_channel_desc">Required to notify about the location usage</string>
+
+    <!--    Near By Channel-->
+    <string name="near_by_channel_id">NEARBY</string>
+    <string name="near_by_channel_name">Nearby Alert</string>
+    <string name="near_by_channel_desc">Required to notify about the near by On-Air People</string>
+<!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+</resources>
