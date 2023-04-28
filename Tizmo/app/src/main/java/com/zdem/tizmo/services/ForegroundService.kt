@@ -9,6 +9,7 @@ import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
 import com.zdem.tizmo.R
+import com.zdem.tizmo.data.remote.Api.sendLocation
 import com.zdem.tizmo.utils.DefaultLocationClient.getLocationUpdates
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -30,7 +31,7 @@ class ForegroundService : LifecycleService() {
 
     override fun onCreate() {
         super.onCreate()
-        RUNNING = true
+        RUNNING.postValue(true)
     }
 
     private fun start() {
@@ -67,6 +68,8 @@ class ForegroundService : LifecycleService() {
                 if (LiveLocation.hasObservers()) {
                     LiveLocation.postValue(list)
                 }
+
+                sendLocation(applicationContext, latLng)
             }
         }
 
@@ -80,12 +83,12 @@ class ForegroundService : LifecycleService() {
 
     override fun onDestroy() {
         super.onDestroy()
-        RUNNING = false
+        RUNNING.postValue(false)
         serviceScope.cancel()
     }
 
     companion object {
-        var RUNNING = false
+        val RUNNING = MutableLiveData<Boolean>()
         val LiveLocation = MutableLiveData<List<LatLng>>()
         const val ACTION_START = "ACTION_START"
         const val ACTION_STOP = "ACTION_STOP"

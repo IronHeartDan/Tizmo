@@ -37,6 +37,7 @@ val auth = FirebaseAuth.getInstance()
 var verifyId by mutableStateOf("")
 var codeSent by mutableStateOf(false)
 var isLoading by mutableStateOf(false)
+var isError by mutableStateOf(false)
 
 @Composable
 fun AuthScreen() {
@@ -62,6 +63,7 @@ fun AuthScreen() {
     ) {
         TextField(
             modifier = Modifier.fillMaxWidth(),
+            isError = isError,
             placeholder = {
                 if (!codeSent) {
                     Text(text = "Enter Phone")
@@ -173,6 +175,7 @@ private fun signInWithPhoneAuthCredential(credential: PhoneAuthCredential) {
                 if (task.exception is FirebaseAuthInvalidCredentialsException) {
                     // The verification code entered was invalid
                     Log.d("AuthScreen", "onVerificationFailed: Invalid Code")
+                    isError = true
                     isLoading = false
                 }
             }

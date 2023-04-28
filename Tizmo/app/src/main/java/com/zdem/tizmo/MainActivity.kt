@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -23,6 +24,8 @@ import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.SheetState
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -53,6 +56,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.zdem.tizmo.screens.AuthScreen
 import com.zdem.tizmo.screens.ProfileScreen
 import com.zdem.tizmo.services.ForegroundService
+import com.zdem.tizmo.services.ForegroundService.Companion.RUNNING
 import com.zdem.tizmo.ui.theme.LocationTrackingTheme
 import com.zdem.tizmo.utils.DefaultLocationClient.getCurrentLocation
 import com.zdem.tizmo.viewmodels.MainViewModel
@@ -150,9 +154,24 @@ class MainActivity : ComponentActivity() {
             })
 
             val coroutineScope = rememberCoroutineScope()
-            val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
+            val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
+                bottomSheetState = SheetState(
+                    initialValue = SheetValue.Hidden,
+                    skipHiddenState = false,
+                    skipPartiallyExpanded = false
+                )
+            )
 
             val user by viewModel.userLiveData.observeAsState()
+
+            BackHandler {
+                if (bottomSheetScaffoldState.bottomSheetState.isVisible) {
+                    coroutineScope.launch {
+                        bottomSheetScaffoldState.bottomSheetState.hide()
+                        cancel()
+                    }
+                }
+            }
 
             LocationTrackingTheme {
                 Surface {
@@ -240,17 +259,21 @@ class MainActivity : ComponentActivity() {
                                     }
                                 )
 
-                                var swipeState by remember {
-                                    mutableStateOf(ForegroundService.RUNNING)
-                                }
+                                val running by RUNNING.observeAsState(initial = false)
 
                                 Box(
                                     modifier = Modifier
                                         .padding(start = 14.dp, end = 14.dp, bottom = 16.dp)
                                         .align(Alignment.BottomCenter)
                                 ) {
-                                    OnAirSwipe(currentState = swipeState, onSwipeFinished = {
-                                        swipeState = true
+                                    OnAirSwipe(currentState = running, onSwipeFinished = {
+                                        if (user == null) {
+                                            coroutineScope.launch {
+                                                bottomSheetScaffoldState.bottomSheetState.expand()
+                                                cancel()
+                                            }
+                                            return@OnAirSwipe
+                                        }
                                         Intent(
                                             context, ForegroundService::class.java
                                         ).apply {
@@ -258,7 +281,6 @@ class MainActivity : ComponentActivity() {
                                             context.startService(this)
                                         }
                                     }, onReset = {
-                                        swipeState = false
                                         Intent(
                                             context, ForegroundService::class.java
                                         ).apply {
@@ -276,7 +298,7 @@ class MainActivity : ComponentActivity() {
                             if (user == null) {
                                 AuthScreen()
                             } else {
-                                ProfileScreen()
+                                ProfileScreen(user = user!!)
                             }
 
                         })

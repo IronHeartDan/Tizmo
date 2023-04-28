@@ -3,6 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'com.google.gms.google-services'
     id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
+    id 'org.jetbrains.kotlin.plugin.serialization'
 }
 
 android {
@@ -39,7 +40,7 @@ android {
         compose true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion '1.4.3'
+        kotlinCompilerExtensionVersion '1.4.6'
     }
     packagingOptions {
         resources {
@@ -88,7 +89,10 @@ dependencies {
     implementation 'com.google.android.gms:play-services-maps:18.1.0'
 
     // Ktor
-    implementation("io.ktor:ktor-client-core:2.3.0")
-    implementation 'io.ktor:ktor-client-android:1.5.0'
+    def ktor_version = "1.5.0"
+    implementation "io.ktor:ktor-client-core:$ktor_version"
+    implementation "io.ktor:ktor-client-android:$ktor_version"
+    implementation "io.ktor:ktor-client-serialization:$ktor_version"
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
 
 }
