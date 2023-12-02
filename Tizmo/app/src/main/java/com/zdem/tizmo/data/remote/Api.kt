@@ -4,12 +4,14 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.auth.FirebaseAuth
 import com.zdem.tizmo.data.remote.dto.PostLocation
 import com.zdem.tizmo.services.ForegroundService
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.features.json.serializer.KotlinxSerializer
+import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
@@ -27,9 +29,15 @@ object Api {
     private const val POST_LOCATION = "$SERVER_URL/location"
 
 
-    suspend fun sendLocation(context: Context,latLng: LatLng) {
+    suspend fun sendLocation(context: Context, latLng: LatLng) {
         try {
             httpClient.post<String>(POST_LOCATION) {
+                FirebaseAuth.getInstance().currentUser?.getIdToken(false)
+                    ?.addOnSuccessListener { tokenResult ->
+                        tokenResult.token?.let {
+                            header("Authorization", it)
+                        }
+                    }
                 contentType(ContentType.Application.Json)
                 body = PostLocation(1, latLng.latitude, latLng.longitude)
             }
